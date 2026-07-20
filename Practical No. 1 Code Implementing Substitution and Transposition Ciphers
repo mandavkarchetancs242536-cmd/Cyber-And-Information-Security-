@@ -1,0 +1,197 @@
+# PART 1A Classical Substitution Cipher (Caesar Cipher) CLI MODE
+def encrypt(text, shift):
+    result = ""
+
+    for char in text:
+        if char.isalpha():
+            ascii_offset = 65 if char.isupper() else 97
+            result += chr((ord(char) - ascii_offset + shift) % 26 + ascii_offset)
+        else:
+            result += char
+
+    return result
+
+
+def decrypt(text, shift):
+    return encrypt(text, -shift)
+
+
+while True:
+    print("\n===== Caesar Cipher =====")
+    print("1. Encrypt")
+    print("2. Decrypt")
+    print("3. Exit")
+
+    choice = input("Enter Choice: ")
+
+    if choice == "1":
+        msg = input("Enter Message: ")
+        key = int(input("Enter Shift Key: "))
+        print("Encrypted Message:", encrypt(msg, key))
+
+    elif choice == "2":
+        msg = input("Enter Cipher Text: ")
+        key = int(input("Enter Shift Key: "))
+        print("Decrypted Message:", decrypt(msg, key))
+
+    elif choice == "3":
+        print("Thank You")
+        break
+
+    else:
+        print("Invalid Choice")
+
+
+# PART 1A Classical Substitution Cipher (Caesar Cipher) GUI MODE
+from tkinter import *
+
+def encrypt():
+    text = message.get()
+    shift = int(key.get())
+    result = ""
+
+    for ch in text:
+        if ch.isalpha():
+            offset = 65 if ch.isupper() else 97
+            result += chr((ord(ch)-offset+shift)%26+offset)
+        else:
+            result += ch
+
+    output.delete(0, END)
+    output.insert(0, result)
+
+
+def decrypt():
+    text = message.get()
+    shift = int(key.get())
+    result = ""
+
+    for ch in text:
+        if ch.isalpha():
+            offset = 65 if ch.isupper() else 97
+            result += chr((ord(ch)-offset-shift)%26+offset)
+        else:
+            result += ch
+
+    output.delete(0, END)
+    output.insert(0, result)
+
+
+root = Tk()
+root.title("Caesar Cipher")
+root.geometry("400x300")
+
+Label(root, text="Message").pack()
+
+message = Entry(root, width=40)
+message.pack()
+
+Label(root, text="Shift Key").pack()
+
+key = Entry(root)
+key.pack()
+
+Button(root, text="Encrypt", command=encrypt).pack(pady=5)
+Button(root, text="Decrypt", command=decrypt).pack(pady=5)
+
+output = Entry(root, width=40)
+output.pack()
+
+root.mainloop()
+
+
+
+# PART 1B Transposition Cipher (Rail Fence Cipher) CLI MODE
+def encrypt(text):
+    even = text[::2]
+    odd = text[1::2]
+    return even + odd
+
+
+def decrypt(cipher):
+    half = (len(cipher)+1)//2
+    even = cipher[:half]
+    odd = cipher[half:]
+
+    result = ""
+
+    for i in range(half):
+        result += even[i]
+        if i < len(odd):
+            result += odd[i]
+
+    return result
+
+
+while True:
+
+    print("\n===== Rail Fence Cipher =====")
+    print("1. Encrypt")
+    print("2. Decrypt")
+    print("3. Exit")
+
+    choice = input("Enter Choice: ")
+
+    if choice == "1":
+        msg = input("Enter Message: ")
+        print("Encrypted:", encrypt(msg))
+
+    elif choice == "2":
+        msg = input("Enter Cipher Text: ")
+        print("Decrypted:", decrypt(msg))
+
+    elif choice == "3":
+        break
+
+    else:
+        print("Invalid Choice")
+
+
+# PART 1B Transposition Cipher (Rail Fence Cipher) GUI MODE
+from tkinter import *
+
+def encrypt():
+    text = message.get()
+    even = text[::2]
+    odd = text[1::2]
+    result = even + odd
+
+    output.delete(0, END)
+    output.insert(0, result)
+
+
+def decrypt():
+    cipher = message.get()
+
+    half = (len(cipher)+1)//2
+    even = cipher[:half]
+    odd = cipher[half:]
+
+    result = ""
+
+    for i in range(half):
+        result += even[i]
+        if i < len(odd):
+            result += odd[i]
+
+    output.delete(0, END)
+    output.insert(0, result)
+
+
+root = Tk()
+
+root.title("Rail Fence Cipher")
+root.geometry("400x250")
+
+Label(root, text="Message").pack()
+
+message = Entry(root, width=40)
+message.pack()
+
+Button(root, text="Encrypt", command=encrypt).pack(pady=5)
+Button(root, text="Decrypt", command=decrypt).pack(pady=5)
+
+output = Entry(root, width=40)
+output.pack()
+
+root.mainloop()
