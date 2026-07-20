@@ -1,0 +1,316 @@
+# RSA ENCRYPTION AND DECRYPTION CLI MODE
+
+import math
+
+
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def mod_inverse(e, phi):
+    for d in range(1, phi):
+        if (d * e) % phi == 1:
+            return d
+    return None
+
+
+def generate_keys():
+    p = 17
+    q = 11
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    e = 7
+    while gcd(e, phi) != 1:
+        e += 1
+
+    d = mod_inverse(e, phi)
+
+    return (e, n), (d, n)
+
+
+def encrypt(public_key, message):
+    e, n = public_key
+    cipher = []
+
+    for char in message:
+        cipher.append(pow(ord(char), e, n))
+
+    return cipher
+
+
+def decrypt(private_key, cipher):
+    d, n = private_key
+    text = ""
+
+    for num in cipher:
+        text += chr(pow(num, d, n))
+
+    return text
+
+
+public_key, private_key = generate_keys()
+
+print("========== RSA Encryption ==========")
+print("Public Key :", public_key)
+print("Private Key:", private_key)
+
+message = input("\nEnter Message: ")
+
+cipher = encrypt(public_key, message)
+
+print("\nEncrypted Message:")
+print(cipher)
+
+plain = decrypt(private_key, cipher)
+
+print("\nDecrypted Message:")
+print(plain)
+
+
+
+# RSA ENCRYPTION AND DECRYPTION GUI MODE
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+
+
+
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def mod_inverse(e, phi):
+    for d in range(1, phi):
+        if (d * e) % phi == 1:
+            return d
+    return None
+
+def generate_keys():
+    p = 17
+    q = 11
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    e = 7
+    while gcd(e, phi) != 1:
+        e += 1
+
+    d = mod_inverse(e, phi)
+
+    return (e, n), (d, n)
+
+public_key, private_key = generate_keys()
+
+
+
+def encrypt():
+
+    message = input_box.get()
+
+    if message == "":
+        messagebox.showwarning("Warning", "Please enter a message.")
+        return
+
+    cipher = [pow(ord(ch), public_key[0], public_key[1]) for ch in message]
+
+    encrypted_box.delete("1.0", tk.END)
+    encrypted_box.insert(tk.END, str(cipher))
+
+    status.config(text="✔ Message Encrypted Successfully")
+
+def decrypt():
+
+    try:
+
+        cipher = eval(encrypted_box.get("1.0", tk.END))
+
+        text = ""
+
+        for num in cipher:
+            text += chr(pow(num, private_key[0], private_key[1]))
+
+        decrypted_box.delete("1.0", tk.END)
+        decrypted_box.insert(tk.END, text)
+
+        status.config(text="✔ Message Decrypted Successfully")
+
+    except:
+        messagebox.showerror("Error", "Invalid Cipher Text")
+
+
+def clear():
+
+    input_box.delete(0, tk.END)
+    encrypted_box.delete("1.0", tk.END)
+    decrypted_box.delete("1.0", tk.END)
+
+    status.config(text="Ready")
+
+
+
+root = tk.Tk()
+root.title("RSA Encryption & Decryption")
+root.geometry("900x720")
+root.configure(bg="#0f172a")
+root.resizable(False, False)
+
+
+
+title = tk.Label(
+    root,
+    text="🔐 RSA ENCRYPTION & DECRYPTION",
+    font=("Consolas", 24, "bold"),
+    fg="#00FFFF",
+    bg="#0f172a"
+)
+title.pack(pady=15)
+
+subtitle = tk.Label(
+    root,
+    text="Cyber Security Practical - Public Key Cryptography",
+    font=("Arial", 12),
+    fg="white",
+    bg="#0f172a"
+)
+subtitle.pack()
+
+
+
+frame = tk.Frame(root, bg="#1e293b", bd=2, relief="ridge")
+frame.pack(padx=20, pady=20, fill="both", expand=True)
+
+
+
+tk.Label(
+    frame,
+    text=f"Public Key : {public_key}",
+    fg="#7CFC00",
+    bg="#1e293b",
+    font=("Consolas", 12, "bold")
+).pack(pady=5)
+
+tk.Label(
+    frame,
+    text=f"Private Key : {private_key}",
+    fg="#7CFC00",
+    bg="#1e293b",
+    font=("Consolas", 12, "bold")
+).pack()
+
+
+
+tk.Label(
+    frame,
+    text="Enter Plain Text",
+    bg="#1e293b",
+    fg="white",
+    font=("Arial", 12, "bold")
+).pack(pady=(20,5))
+
+input_box = tk.Entry(
+    frame,
+    width=60,
+    font=("Consolas", 14),
+    bg="#0f172a",
+    fg="#00FFFF",
+    insertbackground="white"
+)
+input_box.pack(ipady=6)
+
+
+
+button_frame = tk.Frame(frame, bg="#1e293b")
+button_frame.pack(pady=20)
+
+encrypt_btn = tk.Button(
+    button_frame,
+    text="Encrypt",
+    font=("Arial", 12, "bold"),
+    bg="#2563eb",
+    fg="white",
+    width=15,
+    command=encrypt
+)
+encrypt_btn.grid(row=0, column=0, padx=10)
+
+decrypt_btn = tk.Button(
+    button_frame,
+    text="Decrypt",
+    font=("Arial", 12, "bold"),
+    bg="#16a34a",
+    fg="white",
+    width=15,
+    command=decrypt
+)
+decrypt_btn.grid(row=0, column=1, padx=10)
+
+clear_btn = tk.Button(
+    button_frame,
+    text="Clear",
+    font=("Arial", 12, "bold"),
+    bg="#dc2626",
+    fg="white",
+    width=15,
+    command=clear
+)
+clear_btn.grid(row=0, column=2, padx=10)
+
+
+
+tk.Label(
+    frame,
+    text="Encrypted Cipher",
+    font=("Arial", 12, "bold"),
+    bg="#1e293b",
+    fg="white"
+).pack()
+
+encrypted_box = scrolledtext.ScrolledText(
+    frame,
+    width=70,
+    height=6,
+    bg="#020617",
+    fg="#00FF99",
+    font=("Consolas", 11)
+)
+encrypted_box.pack(pady=8)
+
+
+
+tk.Label(
+    frame,
+    text="Decrypted Plain Text",
+    font=("Arial", 12, "bold"),
+    bg="#1e293b",
+    fg="white"
+).pack()
+
+decrypted_box = scrolledtext.ScrolledText(
+    frame,
+    width=70,
+    height=6,
+    bg="#020617",
+    fg="#00FFFF",
+    font=("Consolas", 11)
+)
+decrypted_box.pack(pady=8)
+
+
+
+status = tk.Label(
+    root,
+    text="Ready",
+    anchor="w",
+    bg="#111827",
+    fg="#00FF99",
+    font=("Arial", 10)
+)
+
+status.pack(fill="x", side="bottom")
+
+root.mainloop()
