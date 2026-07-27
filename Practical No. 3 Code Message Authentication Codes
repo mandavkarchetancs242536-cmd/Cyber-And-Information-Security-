@@ -1,0 +1,340 @@
+# CLI VERSION
+import hmac
+import hashlib
+
+print("=" * 55)
+print("MESSAGE AUTHENTICATION CODE (HMAC - SHA256)")
+print("=" * 55)
+
+
+secret_key = input("Enter Secret Key: ").encode()
+
+
+message = input("Enter Message: ").encode()
+
+
+mac = hmac.new(secret_key, message, hashlib.sha256).hexdigest()
+
+print("\nGenerated MAC:")
+print(mac)
+
+print("\n------ Verification ------")
+
+received_message = input("Enter Message to Verify: ").encode()
+received_mac = input("Enter Received MAC: ")
+
+new_mac = hmac.new(secret_key, received_message, hashlib.sha256).hexdigest()
+
+if hmac.compare_digest(new_mac, received_mac):
+    print("\n✅ MAC Verified Successfully!")
+    print("Data Integrity Maintained.")
+    print("Message is Authentic.")
+else:
+    print("\n❌ MAC Verification Failed!")
+    print("Message has been Modified or Key is Incorrect.")
+
+
+
+# GUI VERSION
+import tkinter as tk
+from tkinter import messagebox
+import hmac
+import hashlib
+
+
+
+def generate_mac():
+    key = entry_key.get().strip().encode()
+    msg = txt_message.get("1.0", tk.END).strip().encode()
+
+    if not key or not msg:
+        messagebox.showerror("Error", "Please enter Secret Key and Message.")
+        return
+
+    mac = hmac.new(key, msg, hashlib.sha256).hexdigest()
+
+    txt_mac.config(state="normal")
+    txt_mac.delete("1.0", tk.END)
+    txt_mac.insert(tk.END, mac)
+    txt_mac.config(state="disabled")
+
+
+def verify_mac():
+    key = entry_key.get().strip().encode()
+    msg = txt_verify_message.get("1.0", tk.END).strip().encode()
+    received_mac = txt_received_mac.get("1.0", tk.END).strip()
+
+    if not key or not msg or not received_mac:
+        messagebox.showerror("Error", "Please fill all fields.")
+        return
+
+    new_mac = hmac.new(key, msg, hashlib.sha256).hexdigest()
+
+    if hmac.compare_digest(new_mac, received_mac):
+        lbl_result.config(
+            text="✔ MAC VERIFIED SUCCESSFULLY",
+            fg="#00ff66"
+        )
+        messagebox.showinfo("Success",
+                            "Message is Authentic.\nData Integrity Maintained.")
+    else:
+        lbl_result.config(
+            text="✖ MAC VERIFICATION FAILED",
+            fg="red"
+        )
+        messagebox.showerror("Failed",
+                             "Message has been Modified\nor Secret Key is Incorrect.")
+
+
+def copy_mac():
+    txt = txt_mac.get("1.0", tk.END).strip()
+
+    if txt == "":
+        return
+
+    root.clipboard_clear()
+    root.clipboard_append(txt)
+
+    messagebox.showinfo("Copied", "Generated MAC copied to Clipboard.")
+
+
+def clear_all():
+    entry_key.delete(0, tk.END)
+
+    txt_message.delete("1.0", tk.END)
+    txt_mac.config(state="normal")
+    txt_mac.delete("1.0", tk.END)
+    txt_mac.config(state="disabled")
+
+    txt_verify_message.delete("1.0", tk.END)
+    txt_received_mac.delete("1.0", tk.END)
+
+    lbl_result.config(text="")
+
+
+
+
+root = tk.Tk()
+
+root.title("Cyber Security - Message Authentication Code")
+root.geometry("900x760")
+root.configure(bg="#0b0f19")
+root.resizable(False, False)
+
+
+
+title = tk.Label(
+    root,
+    text="🔐 MESSAGE AUTHENTICATION CODE (HMAC - SHA256)",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Consolas", 20, "bold")
+)
+
+title.pack(pady=20)
+
+subtitle = tk.Label(
+    root,
+    text="Cyber & Information Security Practical",
+    bg="#0b0f19",
+    fg="white",
+    font=("Calibri", 12)
+)
+
+subtitle.pack()
+
+
+
+tk.Label(
+    root,
+    text="Secret Key",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Arial", 11, "bold")
+).pack(anchor="w", padx=40)
+
+entry_key = tk.Entry(
+    root,
+    width=80,
+    font=("Consolas", 11),
+    bg="#1b263b",
+    fg="white",
+    insertbackground="white"
+)
+
+entry_key.pack(padx=40, pady=5)
+
+
+
+tk.Label(
+    root,
+    text="Original Message",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Arial", 11, "bold")
+).pack(anchor="w", padx=40)
+
+txt_message = tk.Text(
+    root,
+    height=5,
+    width=95,
+    bg="#1b263b",
+    fg="white",
+    font=("Consolas", 10),
+    insertbackground="white"
+)
+
+txt_message.pack(padx=40)
+
+
+
+tk.Button(
+    root,
+    text="Generate MAC",
+    bg="#008cff",
+    fg="white",
+    font=("Arial", 11, "bold"),
+    width=20,
+    command=generate_mac
+).pack(pady=15)
+
+
+
+tk.Label(
+    root,
+    text="Generated MAC",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Arial", 11, "bold")
+).pack(anchor="w", padx=40)
+
+frame_mac = tk.Frame(root)
+
+frame_mac.pack()
+
+scroll = tk.Scrollbar(frame_mac)
+
+scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+txt_mac = tk.Text(
+    frame_mac,
+    height=4,
+    width=95,
+    bg="black",
+    fg="#00ff66",
+    font=("Consolas", 10),
+    yscrollcommand=scroll.set,
+    state="disabled"
+)
+
+txt_mac.pack(side=tk.LEFT)
+
+scroll.config(command=txt_mac.yview)
+
+
+
+tk.Button(
+    root,
+    text="Copy Generated MAC",
+    bg="#00aa88",
+    fg="white",
+    width=22,
+    font=("Arial", 10, "bold"),
+    command=copy_mac
+).pack(pady=10)
+
+
+
+tk.Label(
+    root,
+    text="Message for Verification",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Arial", 11, "bold")
+).pack(anchor="w", padx=40)
+
+txt_verify_message = tk.Text(
+    root,
+    height=5,
+    width=95,
+    bg="#1b263b",
+    fg="white",
+    font=("Consolas", 10),
+    insertbackground="white"
+)
+
+txt_verify_message.pack(padx=40)
+
+
+
+tk.Label(
+    root,
+    text="Received MAC",
+    bg="#0b0f19",
+    fg="#00ff99",
+    font=("Arial", 11, "bold")
+).pack(anchor="w", padx=40)
+
+txt_received_mac = tk.Text(
+    root,
+    height=4,
+    width=95,
+    bg="#1b263b",
+    fg="white",
+    font=("Consolas", 10),
+    insertbackground="white"
+)
+
+txt_received_mac.pack(padx=40)
+
+
+
+frame = tk.Frame(root, bg="#0b0f19")
+frame.pack(pady=15)
+
+tk.Button(
+    frame,
+    text="Verify MAC",
+    bg="#00cc66",
+    fg="white",
+    width=18,
+    font=("Arial", 11, "bold"),
+    command=verify_mac
+).grid(row=0, column=0, padx=15)
+
+tk.Button(
+    frame,
+    text="Clear",
+    bg="#ff4444",
+    fg="white",
+    width=18,
+    font=("Arial", 11, "bold"),
+    command=clear_all
+).grid(row=0, column=1, padx=15)
+
+
+
+lbl_result = tk.Label(
+    root,
+    text="",
+    bg="#0b0f19",
+    fg="white",
+    font=("Arial", 16, "bold")
+)
+
+lbl_result.pack(pady=15)
+
+
+
+footer = tk.Label(
+    root,
+    text="Developed for Cyber & Information Security Practical",
+    bg="#0b0f19",
+    fg="gray",
+    font=("Calibri", 10)
+)
+
+footer.pack(side="bottom", pady=10)
+
+root.mainloop()
+
