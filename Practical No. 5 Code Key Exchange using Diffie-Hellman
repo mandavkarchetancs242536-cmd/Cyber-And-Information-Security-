@@ -1,0 +1,832 @@
+# CLI MODE
+print("=" * 55)
+print("       DIFFIE-HELLMAN KEY EXCHANGE")
+print("=" * 55)
+
+
+p = 23
+g = 15
+
+print("\nPublic Parameters:")
+print("Prime Number (p):", p)
+print("Generator (g):", g)
+
+
+alice_private = int(input("\nEnter Alice's Private Key: "))
+bob_private = int(input("Enter Bob's Private Key: "))
+
+
+alice_public = pow(g, alice_private, p)
+bob_public = pow(g, bob_private, p)
+
+print("\n--- Public Key Generation ---")
+print("Alice's Public Key:", alice_public)
+print("Bob's Public Key:", bob_public)
+
+
+alice_shared = pow(bob_public, alice_private, p)
+bob_shared = pow(alice_public, bob_private, p)
+
+print("\n--- Shared Secret Calculation ---")
+print("Alice's Shared Secret:", alice_shared)
+print("Bob's Shared Secret:", bob_shared)
+
+if alice_shared == bob_shared:
+    print("\n✓ KEY EXCHANGE SUCCESSFUL")
+    print("Both Alice and Bob have the same shared secret.")
+else:
+    print("\n✗ KEY EXCHANGE FAILED")
+    print("Shared secrets do not match.")
+
+
+print("\n--- FAILED VERIFICATION TEST ---")
+
+test_secret = bob_shared + 1
+
+print("Alice's Shared Secret:", alice_shared)
+print("Modified Bob's Secret:", test_secret)
+
+if alice_shared == test_secret:
+    print("✓ KEY EXCHANGE SUCCESSFUL")
+    print("Both shared secrets match.")
+else:
+    print("✗ KEY EXCHANGE FAILED")
+    print("Shared secrets do not match.")
+
+print("=" * 55)
+
+
+
+
+
+
+# GUI MODE
+import tkinter as tk
+from tkinter import messagebox
+
+
+def calculate_exchange():
+
+    try:
+        p = int(p_entry.get())
+        g = int(g_entry.get())
+
+        alice_private = int(alice_private_entry.get())
+        bob_private = int(bob_private_entry.get())
+
+        if p <= 1 or g <= 0:
+            messagebox.showwarning(
+                "Invalid Input",
+                "Please enter valid values for p and g."
+            )
+            return
+
+        if alice_private <= 0 or bob_private <= 0:
+            messagebox.showwarning(
+                "Invalid Private Key",
+                "Private keys must be positive numbers."
+            )
+            return
+
+        
+        alice_public = pow(g, alice_private, p)
+        bob_public = pow(g, bob_private, p)
+
+        
+        alice_shared = pow(
+            bob_public,
+            alice_private,
+            p
+        )
+
+        bob_shared = pow(
+            alice_public,
+            bob_private,
+            p
+        )
+
+        
+        alice_public_entry.config(state="normal")
+        alice_public_entry.delete(0, tk.END)
+        alice_public_entry.insert(0, str(alice_public))
+        alice_public_entry.config(state="readonly")
+
+        
+        bob_public_entry.config(state="normal")
+        bob_public_entry.delete(0, tk.END)
+        bob_public_entry.insert(0, str(bob_public))
+        bob_public_entry.config(state="readonly")
+
+        
+        alice_shared_entry.config(state="normal")
+        alice_shared_entry.delete(0, tk.END)
+        alice_shared_entry.insert(0, str(alice_shared))
+        alice_shared_entry.config(state="readonly")
+
+        
+        bob_shared_entry.config(state="normal")
+        bob_shared_entry.delete(0, tk.END)
+        bob_shared_entry.insert(0, str(bob_shared))
+        bob_shared_entry.config(state="readonly")
+
+       
+        global original_alice_shared
+        global original_bob_shared
+
+        original_alice_shared = alice_shared
+        original_bob_shared = bob_shared
+
+        
+        if alice_shared == bob_shared:
+
+            status_title.config(
+                text="KEY EXCHANGE SUCCESSFUL",
+                fg="#16803c"
+            )
+
+            status_message.config(
+                text="Alice and Bob have generated the same shared secret.",
+                fg="#4b5563"
+            )
+
+            status_icon.config(
+                text="✓",
+                fg="#16803c"
+            )
+
+
+    except ValueError:
+
+        messagebox.showerror(
+            "Invalid Input",
+            "Please enter numbers only."
+        )
+
+
+
+def failed_test():
+
+    try:
+
+        alice_secret = int(alice_shared_entry.get())
+        bob_secret = int(bob_shared_entry.get())
+
+        if not alice_secret or not bob_secret:
+            messagebox.showwarning(
+                "No Key Available",
+                "First generate the shared key."
+            )
+            return
+
+        
+        modified_bob_secret = bob_secret + 1
+
+        bob_shared_entry.config(state="normal")
+        bob_shared_entry.delete(0, tk.END)
+        bob_shared_entry.insert(0, str(modified_bob_secret))
+        bob_shared_entry.config(state="readonly")
+
+       
+        if alice_secret == modified_bob_secret:
+
+            status_icon.config(
+                text="✓",
+                fg="#16803c"
+            )
+
+            status_title.config(
+                text="KEY EXCHANGE SUCCESSFUL",
+                fg="#16803c"
+            )
+
+            status_message.config(
+                text="The shared secrets match.",
+                fg="#4b5563"
+            )
+
+        else:
+
+            status_icon.config(
+                text="✕",
+                fg="#c62828"
+            )
+
+            status_title.config(
+                text="KEY EXCHANGE FAILED",
+                fg="#c62828"
+            )
+
+            status_message.config(
+                text="Shared secrets do not match. Tampering detected.",
+                fg="#4b5563"
+            )
+
+    except ValueError:
+
+        messagebox.showwarning(
+            "Verification Error",
+            "Generate the shared key first."
+        )
+
+
+
+def clear_all():
+
+    alice_private_entry.delete(0, tk.END)
+    bob_private_entry.delete(0, tk.END)
+
+    alice_public_entry.config(state="normal")
+    alice_public_entry.delete(0, tk.END)
+    alice_public_entry.config(state="readonly")
+
+    bob_public_entry.config(state="normal")
+    bob_public_entry.delete(0, tk.END)
+    bob_public_entry.config(state="readonly")
+
+    alice_shared_entry.config(state="normal")
+    alice_shared_entry.delete(0, tk.END)
+    alice_shared_entry.config(state="readonly")
+
+    bob_shared_entry.config(state="normal")
+    bob_shared_entry.delete(0, tk.END)
+    bob_shared_entry.config(state="readonly")
+
+    status_icon.config(
+        text="●",
+        fg="#7c3aed"
+    )
+
+    status_title.config(
+        text="READY FOR KEY EXCHANGE",
+        fg="#7c3aed"
+    )
+
+    status_message.config(
+        text="Enter the private keys and generate the shared secret.",
+        fg="#4b5563"
+    )
+
+
+
+root = tk.Tk()
+
+root.title("Diffie-Hellman Key Exchange")
+
+root.geometry("900x700")
+
+root.configure(bg="#f5f3ff")
+
+root.resizable(False, False)
+
+
+header = tk.Frame(
+    root,
+    bg="#ffffff",
+    height=110
+)
+
+header.pack(fill="x")
+
+header.pack_propagate(False)
+
+
+title = tk.Label(
+    header,
+    text="DIFFIE-HELLMAN",
+    font=("Segoe UI", 25, "bold"),
+    bg="#ffffff",
+    fg="#4c1d95"
+)
+
+title.pack(pady=(18, 0))
+
+
+subtitle = tk.Label(
+    header,
+    text="Secure Key Exchange Simulator",
+    font=("Segoe UI", 11),
+    bg="#ffffff",
+    fg="#6b7280"
+)
+
+subtitle.pack(pady=5)
+
+
+
+
+main = tk.Frame(
+    root,
+    bg="#f5f3ff"
+)
+
+main.pack(
+    fill="both",
+    expand=True,
+    padx=35,
+    pady=25
+)
+
+
+
+
+parameter_box = tk.Frame(
+    main,
+    bg="#ede9fe",
+    padx=20,
+    pady=15
+)
+
+parameter_box.pack(fill="x")
+
+
+parameter_title = tk.Label(
+    parameter_box,
+    text="PUBLIC PARAMETERS",
+    font=("Segoe UI", 10, "bold"),
+    bg="#ede9fe",
+    fg="#6d28d9"
+)
+
+parameter_title.grid(
+    row=0,
+    column=0,
+    columnspan=4,
+    sticky="w",
+    pady=(0, 8)
+)
+
+
+tk.Label(
+    parameter_box,
+    text="Prime Number (p)",
+    font=("Segoe UI", 10),
+    bg="#ede9fe",
+    fg="#374151"
+).grid(row=1, column=0, padx=10)
+
+
+p_entry = tk.Entry(
+    parameter_box,
+    width=12,
+    font=("Segoe UI", 11),
+    bg="#ffffff",
+    fg="#111827",
+    relief="flat",
+    justify="center"
+)
+
+p_entry.grid(
+    row=1,
+    column=1,
+    padx=10
+)
+
+p_entry.insert(0, "23")
+
+
+tk.Label(
+    parameter_box,
+    text="Generator (g)",
+    font=("Segoe UI", 10),
+    bg="#ede9fe",
+    fg="#374151"
+).grid(row=1, column=2, padx=10)
+
+
+g_entry = tk.Entry(
+    parameter_box,
+    width=12,
+    font=("Segoe UI", 11),
+    bg="#ffffff",
+    fg="#111827",
+    relief="flat",
+    justify="center"
+)
+
+g_entry.grid(
+    row=1,
+    column=3,
+    padx=10
+)
+
+g_entry.insert(0, "5")
+
+
+
+
+people_frame = tk.Frame(
+    main,
+    bg="#f5f3ff"
+)
+
+people_frame.pack(
+    fill="x",
+    pady=20
+)
+
+
+
+
+alice_box = tk.Frame(
+    people_frame,
+    bg="#ffffff",
+    highlightbackground="#c4b5fd",
+    highlightthickness=2,
+    padx=20,
+    pady=15
+)
+
+alice_box.grid(
+    row=0,
+    column=0,
+    sticky="nsew"
+)
+
+
+tk.Label(
+    alice_box,
+    text="ALICE",
+    font=("Segoe UI", 16, "bold"),
+    bg="#ffffff",
+    fg="#7c3aed"
+).pack()
+
+
+tk.Label(
+    alice_box,
+    text="Sender / Participant A",
+    font=("Segoe UI", 9),
+    bg="#ffffff",
+    fg="#9ca3af"
+).pack(pady=(0, 15))
+
+
+tk.Label(
+    alice_box,
+    text="Private Key",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+alice_private_entry = tk.Entry(
+    alice_box,
+    font=("Segoe UI", 11),
+    bg="#f9fafb",
+    fg="#111827",
+    relief="flat",
+    justify="center"
+)
+
+alice_private_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 12)
+)
+
+
+tk.Label(
+    alice_box,
+    text="Public Key",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+alice_public_entry = tk.Entry(
+    alice_box,
+    font=("Segoe UI", 11),
+    bg="#f3f4f6",
+    fg="#7c3aed",
+    relief="flat",
+    justify="center"
+)
+
+alice_public_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 12)
+)
+
+alice_public_entry.config(state="readonly")
+
+
+tk.Label(
+    alice_box,
+    text="Shared Secret",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+alice_shared_entry = tk.Entry(
+    alice_box,
+    font=("Segoe UI", 12, "bold"),
+    bg="#f3f4f6",
+    fg="#16803c",
+    relief="flat",
+    justify="center"
+)
+
+alice_shared_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 0)
+)
+
+alice_shared_entry.config(state="readonly")
+
+
+
+
+channel = tk.Frame(
+    people_frame,
+    bg="#f5f3ff",
+    width=130
+)
+
+channel.grid(
+    row=0,
+    column=1,
+    padx=10
+)
+
+channel.grid_propagate(False)
+
+
+tk.Label(
+    channel,
+    text="↔",
+    font=("Segoe UI", 32, "bold"),
+    bg="#f5f3ff",
+    fg="#f59e0b"
+).pack(pady=(45, 0))
+
+
+tk.Label(
+    channel,
+    text="PUBLIC\nCHANNEL",
+    font=("Segoe UI", 8, "bold"),
+    bg="#f5f3ff",
+    fg="#9ca3af"
+).pack()
+
+
+
+
+bob_box = tk.Frame(
+    people_frame,
+    bg="#ffffff",
+    highlightbackground="#fdba74",
+    highlightthickness=2,
+    padx=20,
+    pady=15
+)
+
+bob_box.grid(
+    row=0,
+    column=2,
+    sticky="nsew"
+)
+
+
+tk.Label(
+    bob_box,
+    text="BOB",
+    font=("Segoe UI", 16, "bold"),
+    bg="#ffffff",
+    fg="#ea580c"
+).pack()
+
+
+tk.Label(
+    bob_box,
+    text="Receiver / Participant B",
+    font=("Segoe UI", 9),
+    bg="#ffffff",
+    fg="#9ca3af"
+).pack(pady=(0, 15))
+
+
+tk.Label(
+    bob_box,
+    text="Private Key",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+bob_private_entry = tk.Entry(
+    bob_box,
+    font=("Segoe UI", 11),
+    bg="#f9fafb",
+    fg="#111827",
+    relief="flat",
+    justify="center"
+)
+
+bob_private_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 12)
+)
+
+
+tk.Label(
+    bob_box,
+    text="Public Key",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+bob_public_entry = tk.Entry(
+    bob_box,
+    font=("Segoe UI", 11),
+    bg="#f3f4f6",
+    fg="#ea580c",
+    relief="flat",
+    justify="center"
+)
+
+bob_public_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 12)
+)
+
+bob_public_entry.config(state="readonly")
+
+
+tk.Label(
+    bob_box,
+    text="Shared Secret",
+    font=("Segoe UI", 9, "bold"),
+    bg="#ffffff",
+    fg="#4b5563"
+).pack(anchor="w")
+
+
+bob_shared_entry = tk.Entry(
+    bob_box,
+    font=("Segoe UI", 12, "bold"),
+    bg="#f3f4f6",
+    fg="#16803c",
+    relief="flat",
+    justify="center"
+)
+
+bob_shared_entry.pack(
+    fill="x",
+    ipady=7,
+    pady=(4, 0)
+)
+
+bob_shared_entry.config(state="readonly")
+
+
+
+
+buttons = tk.Frame(
+    main,
+    bg="#f5f3ff"
+)
+
+buttons.pack(pady=5)
+
+
+generate_button = tk.Button(
+    buttons,
+    text="🔑  Generate Shared Key",
+    command=calculate_exchange,
+    font=("Segoe UI", 10, "bold"),
+    bg="#7c3aed",
+    fg="white",
+    activebackground="#6d28d9",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=20,
+    pady=11
+)
+
+generate_button.grid(
+    row=0,
+    column=0,
+    padx=6
+)
+
+
+failed_button = tk.Button(
+    buttons,
+    text="⚠  Test Failed Verification",
+    command=failed_test,
+    font=("Segoe UI", 10, "bold"),
+    bg="#f59e0b",
+    fg="white",
+    activebackground="#d97706",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=20,
+    pady=11
+)
+
+failed_button.grid(
+    row=0,
+    column=1,
+    padx=6
+)
+
+
+clear_button = tk.Button(
+    buttons,
+    text="↻  Reset",
+    command=clear_all,
+    font=("Segoe UI", 10, "bold"),
+    bg="#6b7280",
+    fg="white",
+    activebackground="#4b5563",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=20,
+    pady=11
+)
+
+clear_button.grid(
+    row=0,
+    column=2,
+    padx=6
+)
+
+
+
+
+status_box = tk.Frame(
+    main,
+    bg="#ffffff",
+    highlightbackground="#ddd6fe",
+    highlightthickness=1,
+    padx=20,
+    pady=12
+)
+
+status_box.pack(
+    fill="x",
+    pady=(15, 0)
+)
+
+
+status_icon = tk.Label(
+    status_box,
+    text="●",
+    font=("Segoe UI", 18, "bold"),
+    bg="#ffffff",
+    fg="#7c3aed"
+)
+
+status_icon.pack()
+
+
+status_title = tk.Label(
+    status_box,
+    text="READY FOR KEY EXCHANGE",
+    font=("Segoe UI", 11, "bold"),
+    bg="#ffffff",
+    fg="#7c3aed"
+)
+
+status_title.pack()
+
+
+status_message = tk.Label(
+    status_box,
+    text="Enter the private keys and generate the shared secret.",
+    font=("Segoe UI", 9),
+    bg="#ffffff",
+    fg="#4b5563"
+)
+
+status_message.pack(pady=(3, 0))
+
+
+
+footer = tk.Label(
+    root,
+    text="Diffie-Hellman  •  Secure Key Agreement  •  Educational Demonstration",
+    font=("Segoe UI", 9),
+    bg="#f5f3ff",
+    fg="#9ca3af"
+)
+
+footer.pack(pady=(0, 12))
+
+
+
+root.mainloop()
