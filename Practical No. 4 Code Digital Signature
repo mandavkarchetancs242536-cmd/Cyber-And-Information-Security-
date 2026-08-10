@@ -1,0 +1,427 @@
+# CLI MODE
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes
+import base64
+
+
+private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048
+)
+
+public_key = private_key.public_key()
+
+
+message = input("Enter Message: ").encode()
+
+
+signature = private_key.sign(
+    message,
+    padding.PKCS1v15(),
+    hashes.SHA256()
+)
+
+print("\nOriginal Message:", message.decode())
+print("Digital Signature:", base64.b64encode(signature).decode())
+
+
+verify_message = input("\nEnter Message Again For Verification: ").encode()
+
+
+try:
+    public_key.verify(
+        signature,
+        verify_message,
+        padding.PKCS1v15(),
+        hashes.SHA256()
+    )
+
+    print("\nSignature Verification: SUCCESS")
+    print("Message is Authentic and Has Not Been Modified")
+
+except Exception:
+    print("\nSignature Verification: FAILED")
+    print("Message is Not Authentic or Has Been Modified")
+
+
+
+
+
+# GUI MODE
+import tkinter as tk
+from tkinter import messagebox
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes
+import base64
+
+
+
+private_key = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=2048
+)
+
+public_key = private_key.public_key()
+
+
+
+
+def sign_message():
+
+    message = message_entry.get().strip()
+
+    if not message:
+        messagebox.showwarning(
+            "Input Required",
+            "Please enter a message first."
+        )
+        return
+
+    message_bytes = message.encode()
+
+    signature = private_key.sign(
+        message_bytes,
+        padding.PKCS1v15(),
+        hashes.SHA256()
+    )
+
+    signature_text = base64.b64encode(signature).decode()
+
+    signature_entry.delete("1.0", tk.END)
+    signature_entry.insert(tk.END, signature_text)
+
+    status_label.config(
+        text="●  SIGNATURE GENERATED SUCCESSFULLY",
+        fg="#00e676"
+    )
+
+    status_detail.config(
+        text="The message has been digitally signed using the RSA private key.",
+        fg="#9aa4b2"
+    )
+
+
+def verify_signature():
+
+    message = message_entry.get().strip()
+
+    signature_text = signature_entry.get("1.0", tk.END).strip()
+
+    if not message:
+        messagebox.showwarning(
+            "Input Required",
+            "Please enter a message."
+        )
+        return
+
+    if not signature_text:
+        messagebox.showwarning(
+            "Signature Required",
+            "Please generate or enter a digital signature."
+        )
+        return
+
+    try:
+
+        signature = base64.b64decode(signature_text)
+
+        public_key.verify(
+            signature,
+            message.encode(),
+            padding.PKCS1v15(),
+            hashes.SHA256()
+        )
+
+        status_label.config(
+            text="✓  SIGNATURE VERIFIED",
+            fg="#00e676"
+        )
+
+        status_detail.config(
+            text="Message is authentic and has not been modified.",
+            fg="#9aa4b2"
+        )
+
+    except Exception:
+
+        status_label.config(
+            text="✗  SIGNATURE VERIFICATION FAILED",
+            fg="#ff5252"
+        )
+
+        status_detail.config(
+            text="Message is not authentic or has been modified.",
+            fg="#9aa4b2"
+        )
+
+
+def clear_fields():
+
+    message_entry.delete(0, tk.END)
+
+    signature_entry.delete("1.0", tk.END)
+
+    status_label.config(
+        text="●  READY",
+        fg="#00bcd4"
+    )
+
+    status_detail.config(
+        text="Enter a message and generate a digital signature.",
+        fg="#9aa4b2"
+    )
+
+
+
+
+root = tk.Tk()
+
+root.title("RSA Digital Signature")
+root.geometry("780x650")
+
+root.configure(bg="#0b1220")
+
+root.resizable(False, False)
+
+
+
+
+header = tk.Frame(
+    root,
+    bg="#111c2e",
+    height=100
+)
+
+header.pack(fill="x")
+
+header.pack_propagate(False)
+
+
+title_label = tk.Label(
+    header,
+    text="🔐  RSA DIGITAL SIGNATURE",
+    font=("Segoe UI", 22, "bold"),
+    bg="#111c2e",
+    fg="#ffffff"
+)
+
+title_label.pack(pady=(20, 0))
+
+
+subtitle_label = tk.Label(
+    header,
+    text="Secure Message Authentication & Integrity Verification",
+    font=("Segoe UI", 10),
+    bg="#111c2e",
+    fg="#7f8ea3"
+)
+
+subtitle_label.pack(pady=5)
+
+
+
+
+content = tk.Frame(
+    root,
+    bg="#0b1220"
+)
+
+content.pack(
+    fill="both",
+    expand=True,
+    padx=35,
+    pady=25
+)
+
+
+
+
+message_title = tk.Label(
+    content,
+    text="MESSAGE",
+    font=("Segoe UI", 10, "bold"),
+    bg="#0b1220",
+    fg="#00bcd4"
+)
+
+message_title.pack(anchor="w")
+
+
+message_entry = tk.Entry(
+    content,
+    font=("Segoe UI", 12),
+    bg="#162235",
+    fg="#ffffff",
+    insertbackground="#00bcd4",
+    relief="flat",
+    bd=0
+)
+
+message_entry.pack(
+    fill="x",
+    ipady=12,
+    pady=(8, 22)
+)
+
+
+
+
+signature_title = tk.Label(
+    content,
+    text="DIGITAL SIGNATURE",
+    font=("Segoe UI", 10, "bold"),
+    bg="#0b1220",
+    fg="#00bcd4"
+)
+
+signature_title.pack(anchor="w")
+
+
+signature_entry = tk.Text(
+    content,
+    height=9,
+    font=("Consolas", 9),
+    bg="#162235",
+    fg="#d7e3f4",
+    insertbackground="#00bcd4",
+    relief="flat",
+    bd=0,
+    wrap="word"
+)
+
+signature_entry.pack(
+    fill="x",
+    pady=(8, 22)
+)
+
+
+
+
+button_frame = tk.Frame(
+    content,
+    bg="#0b1220"
+)
+
+button_frame.pack(pady=5)
+
+
+sign_button = tk.Button(
+    button_frame,
+    text="🔏  Generate Signature",
+    command=sign_message,
+    font=("Segoe UI", 10, "bold"),
+    bg="#007c91",
+    fg="white",
+    activebackground="#0097a7",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=18,
+    pady=10
+)
+
+sign_button.grid(
+    row=0,
+    column=0,
+    padx=7
+)
+
+
+verify_button = tk.Button(
+    button_frame,
+    text="✓  Verify Signature",
+    command=verify_signature,
+    font=("Segoe UI", 10, "bold"),
+    bg="#087f5b",
+    fg="white",
+    activebackground="#099268",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=18,
+    pady=10
+)
+
+verify_button.grid(
+    row=0,
+    column=1,
+    padx=7
+)
+
+
+clear_button = tk.Button(
+    button_frame,
+    text="↻  Clear",
+    command=clear_fields,
+    font=("Segoe UI", 10, "bold"),
+    bg="#344054",
+    fg="white",
+    activebackground="#475467",
+    activeforeground="white",
+    relief="flat",
+    cursor="hand2",
+    padx=18,
+    pady=10
+)
+
+clear_button.grid(
+    row=0,
+    column=2,
+    padx=7
+)
+
+
+
+
+status_frame = tk.Frame(
+    content,
+    bg="#111c2e",
+    padx=20,
+    pady=15
+)
+
+status_frame.pack(
+    fill="x",
+    pady=(25, 0)
+)
+
+
+status_label = tk.Label(
+    status_frame,
+    text="●  READY",
+    font=("Segoe UI", 11, "bold"),
+    bg="#111c2e",
+    fg="#00bcd4"
+)
+
+status_label.pack()
+
+
+status_detail = tk.Label(
+    status_frame,
+    text="Enter a message and generate a digital signature.",
+    font=("Segoe UI", 9),
+    bg="#111c2e",
+    fg="#9aa4b2"
+)
+
+status_detail.pack(pady=(5, 0))
+
+
+
+
+footer = tk.Label(
+    root,
+    text="RSA-2048  •  SHA-256  •  PKCS#1 v1.5",
+    font=("Segoe UI", 9),
+    bg="#0b1220",
+    fg="#667085"
+)
+
+footer.pack(
+    pady=(0, 15)
+)
+
+
+
+root.mainloop()
